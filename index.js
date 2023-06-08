@@ -15,7 +15,7 @@ const verifyJWT=(req,res,next)=>{
     return res.status(401).send({error:true,message:'unauthorized access'})
   }
   const token=authorization.split(' ')[1];
-  // verify a token symmetric
+
 jwt.verify(token,process.env.JWT_TOKEN,(err,decoded)=>{
   if (err) {
     return res.status(403).send({error:true,message:'expired access'})
@@ -65,7 +65,7 @@ app.post('/jwt',(req,res)=>{
     res.send({token})
 })
 // admin email get
-app.get('/user/admin/:email', verifyJWT, async(req,res)=>{
+app.get('/user/admin/:email', async(req,res)=>{
   const email =req.params.email;
   if (req.decoded.email !== email) {
     res.send({admin: false})
@@ -75,34 +75,47 @@ app.get('/user/admin/:email', verifyJWT, async(req,res)=>{
   const result={admin: user?.role === 'admin'};
   res.send(result)
 })
+//user patch
+app.patch('/user/admin/:id', async (req,res)=>{
+  const id=req.params.id;
+  const filter={_id: new ObjectId(id)};
+  const updateDoc={
+    $set: {
+      role: 'admin'
+    },
+  }
+  const result=await userCollection.updateOne(filter,updateDoc);
+  res.send(result)
+})
 // admin 
 const verifyAdmin=async (req,res,next)=>{
   const email =req.decoded.email;
   const  query={email: email};
-  const user =  await userCollection.findOne(query);
+  const user =  await usersCollection.findOne(query);
 if ( user?.role !== 'admin') {
   return res.status(403).send({error:true,message:'forbidden message'})
 }
 next();
 }
 // user post
-app.post('/users',async(req,res)=>{
+app.post('/users', async(req,res)=>{
   const user =req.body;
   // console.log(user);
   const query={email: user.email}
-  const existingUser=await usersCollection.findOne(query);
-  // console.log('exist',existingUser);
-  if (existingUser) {
+  const ExistUser=await usersCollection.findOne(query);
+ 
+  if (ExistUser) {
     return res.send({message: 'User already exists'})
   }
   const result=await usersCollection.insertOne(user)
   res.send(result)
 })
 // user get
-app.get('/users',async (req,res)=>{
-  const result =await usersCollection.find().toArray();
+app.get('/users', async (req, res) => {
+  const result = await usersCollection.find().toArray();
   res.send(result);
-})
+});
+
 //clases get
 app.get('/classes',async (req,res)=>{
   const result =await classesCollection.find().toArray();
