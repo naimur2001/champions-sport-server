@@ -34,7 +34,35 @@ async function run() {
     
      client.connect();
     // Send a ping to confirm a successful connection
-    await client.db("admin").command({ ping: 1 });
+  // collections
+  const usersCollection=client.db('cs-db').collection('users')
+  const classesCollection=client.db('cs-db').collection('classes')
+  const instructorsCollection=client.db('cs-db').collection('instructors')
+
+// user post
+app.post('/users',async(req,res)=>{
+  const user =req.body;
+  // console.log(user);
+  const query={email: user.email}
+  const existingUser=await usersCollection.findOne(query);
+  // console.log('exist',existingUser);
+  if (existingUser) {
+    return res.send({message: 'User already exists'})
+  }
+  const result=await usersCollection.insertOne(user)
+  res.send(result)
+})
+// user get
+app.get('/users',async (req,res)=>{
+  const result =await usersCollection.find().toArray();
+  res.send(result);
+})
+//clases get
+app.get('/classes',async (req,res)=>{
+  const result =await classesCollection.find().toArray();
+  res.send(result);
+})
+ await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
   } finally {
     // Ensures that the client will close when you finish/error
