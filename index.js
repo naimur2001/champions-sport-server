@@ -64,7 +64,27 @@ app.post('/jwt',(req,res)=>{
     {expiresIn: '3h'});
     res.send({token})
 })
-
+// admin email get
+app.get('/user/admin/:email', verifyJWT, async(req,res)=>{
+  const email =req.params.email;
+  if (req.decoded.email !== email) {
+    res.send({admin: false})
+  }
+  const query={email: email};
+  const user =  await usersCollection.findOne(query);
+  const result={admin: user?.role === 'admin'};
+  res.send(result)
+})
+// admin 
+const verifyAdmin=async (req,res,next)=>{
+  const email =req.decoded.email;
+  const  query={email: email};
+  const user =  await userCollection.findOne(query);
+if ( user?.role !== 'admin') {
+  return res.status(403).send({error:true,message:'forbidden message'})
+}
+next();
+}
 // user post
 app.post('/users',async(req,res)=>{
   const user =req.body;
