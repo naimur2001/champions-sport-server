@@ -64,34 +64,32 @@ app.post('/jwt',(req,res)=>{
     {expiresIn: '3h'});
     res.send({token})
 })
-// admin email get
-app.get('/user/admin/:email', async(req,res)=>{
-  const email =req.params.email;
-  if (req.decoded.email !== email) {
-    res.send({admin: false})
-  }
-  const query={email: email};
-  const user =  await usersCollection.findOne(query);
-  const result={admin: user?.role === 'admin'};
- return res.send(result)
-})
 
 // admin 
 const verifyAdmin=async (req,res,next)=>{
   const email =req.decoded.email;
   const  query={email: email};
   const user =  await usersCollection.findOne(query);
-if ( user?.role !== 'admin') {
-  return res.status(403).send({error:true,message:'forbidden message'})
+  if ( user?.role !== 'admin') {
+    return res.status(403).send({error:true,message:'forbidden message'})
+  }
+  next();
 }
-next();
-}
+// admin email get
+app.get('/users/admin/:email', async(req,res)=>{
+  const email =req.params.email;
+  const query={email: email};
+  const user =  await usersCollection.findOne(query);
+  const result = { role: user?.role };
+  console.log( result);
+  res.send(result)
+})
 //user patch
 app.patch('/users/admin/:id', async (req,res)=>{
   const id=req.params.id;
   const filter={_id: new ObjectId(id)};
   const roleIdentify= await usersCollection.findOne(filter);
-console.log(roleIdentify.role);
+ //console.log(roleIdentify.role);
   if (roleIdentify.role ==='admin') {
     const id=req.params.id;
     const filter={_id: new ObjectId(id)};
@@ -135,6 +133,12 @@ app.get('/users', async (req, res) => {
 //clases get
 app.get('/classes',async (req,res)=>{
   const result =await classesCollection.find().toArray();
+  res.send(result);
+})
+// classes post
+app.post('/classes', async (req,res)=>{
+  const  classInfo =req.body;
+  const result=await classesCollection.insertOne(classInfo);
   res.send(result);
 })
 //instructors get
