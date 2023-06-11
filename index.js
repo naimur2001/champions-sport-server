@@ -81,7 +81,7 @@ app.get('/users/admin/:email', async(req,res)=>{
   const query={email: email};
   const user =  await usersCollection.findOne(query);
   const result = { role: user?.role };
-  console.log( result);
+  // console.log( result);
   res.send(result)
 })
 //user patch
@@ -116,9 +116,9 @@ app.post('/users', async(req,res)=>{
   const user =req.body;
   // console.log(user);
   const query={email: user.email}
-  const ExistUser=await usersCollection.findOne(query);
+  const existUser=await usersCollection.findOne(query);
  
-  if (ExistUser) {
+  if (existUser) {
     return res.send({message: 'User already exists'})
   }
   const result=await usersCollection.insertOne(user)
@@ -148,6 +148,13 @@ const result=await classCartCollection.insertOne(classes);
 res.send(result)
 
 })
+// class cart get
+app.get('/classcart', async (req, res) => {
+  const userEmail = req.query.email; 
+  const result = await classCartCollection.find({ email: userEmail }).toArray();
+  res.send(result);
+});
+
 //instructors get
 app.get('/instructors',async (req,res)=>{
   const filter={role: 'instructor'}
