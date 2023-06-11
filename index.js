@@ -55,7 +55,7 @@ async function run() {
   // collections
   const usersCollection=client.db('cs-db').collection('users')
   const classesCollection=client.db('cs-db').collection('classes')
-  const instructorsCollection=client.db('cs-db').collection('instructors')
+  const classCartCollection=client.db('cs-db').collection('classcart')
 // jwt post
 
 app.post('/jwt',(req,res)=>{
@@ -127,7 +127,7 @@ app.post('/users', async(req,res)=>{
 // user get
 app.get('/users', async (req, res) => {
   const result = await usersCollection.find().toArray();
-  res.send(result);
+ return res.send(result);
 });
 
 //clases get
@@ -141,10 +141,18 @@ app.post('/classes', async (req,res)=>{
   const result=await classesCollection.insertOne(classInfo);
   res.send(result);
 })
+// class cart
+app.post('/classcart', async (req,res)=>{
+const classes=req.body;
+const result=await classCartCollection.insertOne(classes);
+res.send(result)
+
+})
 //instructors get
 app.get('/instructors',async (req,res)=>{
-  const result =await instructorsCollection.find().toArray();
-  res.send(result);
+  const filter={role: 'instructor'}
+  const result =await usersCollection.find(filter).toArray();
+return  res.send(result);
 })
    
  await client.db("admin").command({ ping: 1 });
