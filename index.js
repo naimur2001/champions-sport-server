@@ -2,6 +2,7 @@ require('dotenv').config()
 const express=require('express');
 const cors=require('cors');
 const jwt=require('jsonwebtoken');
+
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const port=process.env.PORT || 5000;
 const app=express()
@@ -135,11 +136,60 @@ app.get('/classes',async (req,res)=>{
   const result =await classesCollection.find().toArray();
   res.send(result);
 })
+app.get('/classes/:email',async (req,res)=>{
+  const email=req.params.email;
+  console.log(email);
+const filter={instructor_email: email}
+  const result =await classesCollection.find(filter).toArray();
+  res.send(result);
+})
 // classes post
 app.post('/classes', async (req,res)=>{
   const  classInfo =req.body;
   const result=await classesCollection.insertOne(classInfo);
   res.send(result);
+})
+app.patch('/classes/approve/:id', async (req,res)=>{
+  const id=req.params.id;
+  // console.log(id);
+  const filter={_id: new ObjectId(id)};
+  // console.log(filter);
+  const stausIdentify= await classesCollection.findOne(filter);
+  // console.log(stausIdentify);
+  if (stausIdentify.status ==='pending') {
+    const updateDoc={
+      $set: {
+        status: 'approved'
+      },
+    }
+    const result=await classesCollection.updateOne(filter,updateDoc);
+ console.log(result);
+   return res.send(result)
+  }
+ 
+
+
+})
+app.patch('/classes/denied/:id', async (req,res)=>{
+  const id=req.params.id;
+  // console.log(id);
+  const filter={_id: new ObjectId(id)};
+  // console.log(filter);
+  const stausIdentify= await classesCollection.findOne(filter);
+  // console.log(stausIdentify);
+  if (stausIdentify.status ==='pending') {
+    const updateDoc={
+      $set: {
+        status: 'denied'
+      },
+    }
+    const result=await classesCollection.updateOne(filter,updateDoc);
+ console.log(result);
+   return res.send(result)
+  }
+ 
+
+
 })
 // class cart
 app.post('/classcart', async (req,res)=>{
@@ -154,6 +204,13 @@ app.get('/classcart', async (req, res) => {
   const result = await classCartCollection.find({ email: userEmail }).toArray();
   res.send(result);
 });
+// classc cart remove
+app.delete('/classcart/:id',async (req,res)=>{
+   const classId = req.params.id;
+   const query={_id: new ObjectId(classId)};
+   const result=await classCartCollection.deleteOne(query);
+   res.send(result);
+})
 
 //instructors get
 app.get('/instructors',async (req,res)=>{
