@@ -2,7 +2,7 @@ require('dotenv').config()
 const express=require('express');
 const cors=require('cors');
 const jwt=require('jsonwebtoken');
-
+const stripe=require('stripe')(process.env.PAYMET_KEY)
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const port=process.env.PORT || 5000;
 const app=express()
@@ -57,6 +57,7 @@ async function run() {
   const usersCollection=client.db('cs-db').collection('users')
   const classesCollection=client.db('cs-db').collection('classes')
   const classCartCollection=client.db('cs-db').collection('classcart')
+  const paymentCollection=client.db('cs-db').collection('paymentcart')
 // jwt post
 
 app.post('/jwt',(req,res)=>{
@@ -76,6 +77,35 @@ const verifyAdmin=async (req,res,next)=>{
   }
   next();
 }
+// payment
+app.post("/create-payment-intent", async (req, res) => {
+  const  {price}  = req.body;
+const amount=parseInt((price*100).toFixed(2));
+
+  const paymentIntent = await stripe.paymentIntents.create({
+    amount: amount,
+    currency: 'usd',
+    payment_method_types: ['card']
+  })
+ return res.send({
+    clientSecret: paymentIntent.client_secret,
+  });
+});
+//  
+app.post('/payment', async(req, res) =>{
+  const payment = req.body;
+  const insertResult = await paymentCollection.insertOne(payment);
+
+  const query = {_id: { $in: payment.cartItems.map(id => new ObjectId(id)) }}
+  const deleteResult = await classCartCollection.deleteMany(query)
+
+  res.send({ insertResult, deleteResult});
+})
+
+app.get('payment',async (req,res)=>{
+  const result=await paymentCollection.find().toArray();
+  res.send(result);
+})
 // admin email get
 app.get('/users/admin/:email', async(req,res)=>{
   const email =req.params.email;
@@ -138,7 +168,7 @@ app.get('/classes',async (req,res)=>{
 })
 app.get('/classes/:email',async (req,res)=>{
   const email=req.params.email;
-  console.log(email);
+  // console.log(email);
 const filter={instructor_email: email}
   const result =await classesCollection.find(filter).toArray();
   res.send(result);
@@ -148,6 +178,34 @@ app.post('/classes', async (req,res)=>{
   const  classInfo =req.body;
   const result=await classesCollection.insertOne(classInfo);
   res.send(result);
+})
+// classes patch
+// app.patch('/classes', async (req,res)=>{
+//   const  classInfo =req.body;
+//   const result=await classesCollection.insertOne(classInfo);
+//   res.send(result);
+// })
+app.patch('/classes/feedback/:id', async (req,res)=>{
+  const id=req.params.id;
+  const feedback=req.body.feedback
+  // console.log(id);
+  const filter={_id: new ObjectId(id)};
+  // console.log(filter);
+  const stausIdentify= await classesCollection.findOne(filter);
+  // console.log(stausIdentify);
+
+    const updateDoc={
+      $set: {
+        feedback: feedback
+      },
+    }
+    const result=await classesCollection.updateOne(filter,updateDoc);
+ console.log(result);
+   return res.send(result)
+  
+ 
+
+
 })
 app.patch('/classes/approve/:id', async (req,res)=>{
   const id=req.params.id;
