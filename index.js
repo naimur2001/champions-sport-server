@@ -192,12 +192,13 @@ app.get('/classes',async (req,res)=>{
   const result =await classesCollection.find().toArray();
   res.send(result);
 })
-app.get('/classes/:classId',async (req,res)=>{
-  const id = req.params.classId;
-  const filter = { _id: new ObjectId(id) };
-  const result =await classesCollection.find(filter).toArray();
-  res.send(result);
-})
+// //cla
+// app.get('/classes/:classId',async (req,res)=>{
+//   const id = req.params.classId;
+//   const filter = { _id: new ObjectId(id) };
+//   const result =await classesCollection.find(filter).toArray();
+//   res.send(result);
+// })
 // app.patch('/classes/inc/:classId', async (req, res) => {
 //   const id = req.params.classId;
 //   const filter = { _id: new ObjectId(id) };
