@@ -102,7 +102,16 @@ app.post('/payment', async(req, res) =>{
   res.send({ insertResult, deleteResult});
 })
 
-app.get('payment',async (req,res)=>{
+
+
+
+
+
+
+
+
+
+app.get('/payment',async (req,res)=>{
   const result=await paymentCollection.find().toArray();
   res.send(result);
 })
@@ -119,23 +128,22 @@ app.get('/users/admin/:email', async(req,res)=>{
 app.patch('/users/admin/:id', async (req,res)=>{
   const id=req.params.id;
   const filter={_id: new ObjectId(id)};
-  const roleIdentify= await usersCollection.findOne(filter);
- //console.log(roleIdentify.role);
-  if (roleIdentify.role ==='admin') {
-    const id=req.params.id;
-    const filter={_id: new ObjectId(id)};
-    const updateDoc={
-      $set: {
-        role: 'instructor'
-      },
-    }
-    const result=await usersCollection.updateOne(filter,updateDoc);
  
-   return res.send(result)
-  }
   const updateDoc={
     $set: {
       role: 'admin'
+    },
+  }
+  const result=await usersCollection.updateOne(filter,updateDoc);
+  res.send(result)
+})
+app.patch('/users/instructor/:id', async (req,res)=>{
+  const id=req.params.id;
+  const filter={_id: new ObjectId(id)};
+
+  const updateDoc={
+    $set: {
+      role: 'instructor'
     },
   }
   const result=await usersCollection.updateOne(filter,updateDoc);
@@ -161,11 +169,57 @@ app.get('/users', async (req, res) => {
  return res.send(result);
 });
 
+// decrease
+app.patch('/classes/dec/:classId', async (req, res) => {
+  const id = req.params.classId;
+  const filter = { _id: new ObjectId(id) };
+  
+  const updateDoc = {
+    $set: req.body 
+  };
+
+  try {
+    const result = await classesCollection.updateOne(filter, updateDoc);
+    res.send(result);
+  } catch (error) {
+    console.error('Error updating class:', error);
+    res.status(500).json({ error: 'Failed to update class' });
+  }
+});
+// increase
 //clases get
 app.get('/classes',async (req,res)=>{
   const result =await classesCollection.find().toArray();
   res.send(result);
 })
+app.get('/classes/:classId',async (req,res)=>{
+  const id = req.params.classId;
+  const filter = { _id: new ObjectId(id) };
+  const result =await classesCollection.find(filter).toArray();
+  res.send(result);
+})
+// app.patch('/classes/inc/:classId', async (req, res) => {
+//   const id = req.params.classId;
+//   const filter = { _id: new ObjectId(id) };
+
+//   const updateDoc = {
+//     $set: req.body
+//   };
+
+//   try {
+//     const result = await classesCollection.updateOne(filter, updateDoc);
+//     res.send(result);
+//   } catch (error) {
+//     console.error('Error updating class:', error);
+//     res.status(500).json({ error: 'Failed to update class' });
+//   }
+// });
+
+
+
+
+
+
 app.get('/classes/:email',async (req,res)=>{
   const email=req.params.email;
   // console.log(email);
