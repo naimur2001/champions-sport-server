@@ -164,7 +164,9 @@ app.post('/users', async(req,res)=>{
   res.send(result)
 })
 // user get
-app.get('/users', async (req, res) => {
+app.get('/users', verifyJWT, async (req, res) => {
+
+  
   const result = await usersCollection.find().toArray();
  return res.send(result);
 });
@@ -188,7 +190,7 @@ app.patch('/classes/dec/:classId', async (req, res) => {
 });
 // increase
 //clases get
-app.get('/classes',async (req,res)=>{
+app.get('/classes',  async (req,res)=>{
   const result =await classesCollection.find().toArray();
   res.send(result);
 })
@@ -229,7 +231,7 @@ const filter={instructor_email: email}
   res.send(result);
 })
 // classes post
-app.post('/classes', async (req,res)=>{
+app.post('/classes',verifyJWT, async (req,res)=>{
   const  classInfo =req.body;
   const result=await classesCollection.insertOne(classInfo);
   res.send(result);
