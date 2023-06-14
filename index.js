@@ -164,7 +164,7 @@ app.post('/users', async(req,res)=>{
   res.send(result)
 })
 // user get
-app.get('/users', verifyJWT, async (req, res) => {
+app.get('/users', async (req, res) => {
 
   
   const result = await usersCollection.find().toArray();
