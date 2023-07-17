@@ -173,14 +173,17 @@ app.get('/users', async (req, res) => {
 
 // decrease
 app.patch('/classes/dec/:classId', async (req, res) => {
+  try{
   const id = req.params.classId;
+  // console.log(id);
   const filter = { _id: new ObjectId(id) };
-  
+  const {seat}= req.body;
+  // console.log(req.body);
   const updateDoc = {
-    $set: req.body 
+    $set: {seat: seat}
   };
 
-  try {
+  
     const result = await classesCollection.updateOne(filter, updateDoc);
     res.send(result);
   } catch (error) {
@@ -231,7 +234,7 @@ const filter={instructor_email: email}
   res.send(result);
 })
 // classes post
-app.post('/classes',verifyJWT, async (req,res)=>{
+app.post('/classes', async (req,res)=>{
   const  classInfo =req.body;
   const result=await classesCollection.insertOne(classInfo);
   res.send(result);
